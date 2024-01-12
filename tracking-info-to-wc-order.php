@@ -5,8 +5,16 @@ Plugin URI: https://www.damiencarbery.com/
 Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email. Also add custom REST API endpoint to receive info from Shippo.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.3.2
+Version: 0.3.20240112
 */
+
+
+// Declare that this plugin supports WooCommerce HPOS.
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
 
 
 // Add the metabox to allow for manual entering (or editing) of tracking information.
@@ -62,8 +70,8 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 */
 	if ( 'customer_completed_order' == $email->id ) {
 		$order_id = $order->get_id();
-		$tracking_number = get_post_meta( $order_id, 'tracking_number', true );
-		$tracking_url = get_post_meta( $order_id, 'tracking_url', true );
+		$tracking_number = $order->get_meta( $order_id, 'tracking_number', true );
+		$tracking_url = $order->get_meta( $order_id, 'tracking_url', true );
 		
 		// Quit if either tracking field is empty.
 		if ( empty( $tracking_number ) || empty( $tracking_url ) ) {
@@ -128,7 +136,7 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 	
 	
 	public function add_tracking_info( WP_REST_Request $request ){
-		$debug_mode = false;
+		$debug_mode = true;
 		$creds = array();
 		$headers = getallheaders();
 		$transaction_info = json_decode( $request->get_body() );
@@ -137,7 +145,9 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 			error_log( 'Headers: ' . var_export( $headers, true ) );
 			error_log( 'JSON: ' . var_export( $transaction_info, true ) );
 			$headers_and_json = sprintf( '%sHeaders:%s%s%sJSON:%s%s', "\n\n", "\n", var_export( $headers, true ), "\n", var_export( $transaction_info, true ), "\n" );
-			$debug_email = 'efox321@gmail.com';
+			// ToDo: Get this email from WordPress settings.
+			//$debug_email = 'efox321@gmail.com';
+			$debug_email = 'damien.carbery@gmail.com';
 		}
 
 		// Add tracking info to order as custom fields.
@@ -153,8 +163,8 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 
 				// Add the tracking info if both number and url pass sanitization checks.
 				if ( $tracking_number && $tracking_url ) {
-					update_post_meta( $order_id, 'tracking_number', $tracking_number );
-					update_post_meta( $order_id, 'tracking_url', $tracking_url );
+					$order->update_meta_data( $order_id, 'tracking_number', $tracking_number );
+					$order->update_meta_data( $order_id, 'tracking_url', $tracking_url );
 					
 					if ( $debug_mode ) {
 						$message = sprintf( 'Added tracking info: "%s" and "%s"', $tracking_number, $tracking_url );
