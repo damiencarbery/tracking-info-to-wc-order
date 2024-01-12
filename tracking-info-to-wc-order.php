@@ -40,7 +40,7 @@ function dcwd_get_tracking_provider_from_url( $url ) {
 		return 'USPS';
 	}
 	if ( strpos( $url, 'fedex.com' ) !== false ) {
-		return 'FexEd';
+		return 'FedEx';
 	}
 	if ( strpos( $url, 'ups.com' ) !== false ) {
 		return 'UPS';
@@ -69,7 +69,7 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 		if ( empty( $tracking_number ) || empty( $tracking_url ) ) {
 			// Debugging code.
 			error_log( sprintf( 'Order %d does not have both tracking number (%s) and url (%s)', $order_id, $tracking_number, $tracking_url ) );
-			echo '<p>Sorry, tracking information is not available at this time.</p>';
+			echo '<h2>Tracking information</h2><p>Sorry, tracking information is not available at this time.</p>';
 			return;
 		}
 		
@@ -85,10 +85,10 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 		}
 		else {
 			if ( ! empty( $tracking_provider ) ) {
-				printf( '<p>Your order has been shipped with <strong>%s</strong>. The tracking number is <strong><a href="%s">%s</a></strong>.</p>', $tracking_provider, esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+				printf( '<h2>Tracking information</h2><p>Your %s tracking number is <a href="%s" style="color: #a7bf49">%s</a>.</p>', $tracking_provider, esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 			}
 			else {
-				printf( '<p>Your order has been shipped. The tracking number is <strong><a href="%s">%s</a></strong>.</p>', esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+				printf( '<h2>Tracking information</h2><p>Your tracking number is <strong><a href="%s" style="color: #a7bf49">%s</a></strong>.</p>', esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 			}
 		}
 	}
