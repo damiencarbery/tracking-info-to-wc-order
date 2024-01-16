@@ -24,7 +24,7 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 	private $base;
 	private $api_version;
 	private $required_capability;
-	
+
 	public function __construct() {
 		$this->api_namespace = 'shippo/v';
 		$this->base = 'transaction-updated';
@@ -33,13 +33,13 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 		
 		$this->init();
 	}
-	
-	
+
+
 	public function register_routes() {
 		$namespace = $this->api_namespace . $this->api_version;
 		
 		register_rest_route( $namespace, '/' . $this->base, array(
-			array( 'methods' => WP_REST_Server::CREATABLE, 'callback' => array( $this, 'add_tracking_info' ), ),
+			array( 'methods' => WP_REST_Server::CREATABLE, 'callback' => array( $this, 'add_tracking_info' ), 'permission_callback' => '__return_true' ),
 		)  );
 	}
 
@@ -48,17 +48,23 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 	public function init(){
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
-	
-	
+
+
 	public function add_tracking_info( WP_REST_Request $request ){
 		$debug_mode = true;
-		$creds = array();
+		//$creds = array();
 		$headers = getallheaders();
 		$transaction_info = json_decode( $request->get_body() );
-		
+
+		// If it is a test from Shippo just end now.
+		//error_log( 'Headers: ' . var_export( $headers, true ) );
+		//error_log( 'Body: ' . var_export( $request->get_body(), true ) );
+		//if ( empty( $transaction_info ) ) { return new WP_REST_Response( null, 200 ); }
+
 		if ( $debug_mode ) {
 			error_log( 'Headers: ' . var_export( $headers, true ) );
 			error_log( 'JSON: ' . var_export( $transaction_info, true ) );
+
 			$headers_and_json = sprintf( '%sHeaders:%s%s%sJSON:%s%s', "\n\n", "\n", var_export( $headers, true ), "\n", var_export( $transaction_info, true ), "\n" );
 			// ToDo: Get this email from WordPress settings.
 			//$debug_email = 'efox321@gmail.com';
@@ -80,7 +86,7 @@ class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
 				if ( $tracking_number && $tracking_url ) {
 					$order->update_meta_data( 'tracking_number', $tracking_number );
 					$order->update_meta_data( 'tracking_url', $tracking_url );
-					
+
 					if ( $debug_mode ) {
 						$message = sprintf( 'Added tracking info: "%s" and "%s"', $tracking_number, $tracking_url );
 						error_log( $message );
