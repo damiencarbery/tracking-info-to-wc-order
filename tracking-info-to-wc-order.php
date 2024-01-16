@@ -1,21 +1,13 @@
 <?php
 /*
 Plugin Name: Tracking Info to WooCommerce order
-Plugin URI: https://www.damiencarbery.com/
-Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email. Also add custom REST API endpoint to receive info from Shippo.
+Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommerce-order/
+Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
 Version: 0.4.20240116
 WC tested to: 8.5.1
 */
-
-
-// Declare that this plugin supports WooCommerce HPOS.
-add_action( 'before_woocommerce_init', function() {
-	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-	}
-} );
 
 
 // Verify that CMB2 plugin is active.
@@ -32,6 +24,14 @@ function titwo_verify_cmb2_active() {
 		}
 	}
 }
+
+
+// Declare that this plugin supports WooCommerce HPOS.
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
 
 
 // Add the metabox to allow for manual entering (or editing) of tracking information.
@@ -60,6 +60,45 @@ function dcwd_order_metabox() {
 		'protocols'  => array( 'http', 'https' ),
 		'desc' => 'Be sure to add tracking data and click \'Update\' before setting the order status to \'Completed\', and clicking \'Update\' again. If not done in this order the email sent to the customer will not contain the tracking data.',
 	) );
+}
+
+
+// 2022-10-16: Comment this out as it is breaking in Woo >6.9.3. Instead, I simply enable the deferring of emails.
+/*
+// Move the saving of order meta (which triggers emails) to be *after* CMB2 data saved.
+// NOTE: This could have unintended consequences.
+//add_action( 'wp_loaded', 'dcwd_move_wc_order_meta_save');
+function dcwd_move_wc_order_meta_save() {
+	remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40 );
+	// Call WC_Meta_Box_Order_Data::save later, after CMB2 data is saved.
+	add_action( 'save_post', 'dcwd_save_post_order_data', 50, 3 );
+}
+
+
+// Call WC_Meta_Box_Order_Data::save later, after CMB2 data is saved.
+function dcwd_save_post_order_data( $post_id, $post, $update ) {
+	// Call the WooCommerce Meta Box Order Data save function for WC_Order posts only.
+// TODO: Look at wc_get_order_types() as do_action('woocommerce_process_shop_order_meta') runs when in_array( $post->post_type, wc_get_order_types( 'order-meta-boxes' ), true )
+	if ( 'shop_order' == $post->post_type) {
+		WC_Meta_Box_Order_Data::save( $post_id );
+	}
+}*/
+
+
+// Defer emails for 10 seconds to allow time for CMB2 to save the tracking data.
+add_filter( 'woocommerce_defer_transactional_emails', '__return_true' );
+
+
+// If using 'Email Template Customizer for WooCommerce' plugin then use a different hook
+// to add the tracking information to the email.
+add_action( 'plugins_loaded', 'dcwd_check_for_email_template_customizer' );
+function dcwd_check_for_email_template_customizer() {
+    if ( class_exists( 'Woo_Email_Template_Customizer' ) ) {
+        // Email Template Customizer for WooCommerce plugin does not use the 'woocommerce_email_order_details'
+        // hook so use 'woocommerce_email_after_order_table' instead (it is one of the 3 available ones in the
+        // plugin's 'WC Hook' field.
+        add_action( 'woocommerce_email_after_order_table', 'dcwd_add_tracking_info_to_order_completed_email', 5, 4 );
+    }
 }
 
 
