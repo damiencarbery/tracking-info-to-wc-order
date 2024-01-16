@@ -5,7 +5,8 @@ Plugin URI: https://www.damiencarbery.com/
 Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email. Also add custom REST API endpoint to receive info from Shippo.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.3.20240115
+Version: 0.4.20240116
+WC tested to: 8.5.1
 */
 
 
@@ -15,6 +16,22 @@ add_action( 'before_woocommerce_init', function() {
 	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 	}
 } );
+
+
+// Verify that CMB2 plugin is active.
+add_action( 'admin_notices', 'titwo_verify_cmb2_active' );
+function titwo_verify_cmb2_active() {
+	if ( ! defined( 'CMB2_LOADED' ) ) {
+		$current_screen = get_current_screen();
+		if ( $current_screen->id == 'shop_order' ) {
+			$plugin_data = get_plugin_data( __FILE__ );
+			$plugin_name = $plugin_data['Name'];
+?>
+<div class="notice notice-warning is-dismissible"><p>The <strong><?php echo $plugin_name; ?></strong> plugin requires <a href="https://wordpress.org/plugins/cmb2/">CMB2 plugin</a> to be active to enable adding tracking information to orders.</p></div>
+<?php
+		}
+	}
+}
 
 
 // Add the metabox to allow for manual entering (or editing) of tracking information.
@@ -171,105 +188,3 @@ function dcwd_add_tracking_info_to_view_order_page( $order_id ) {
 		printf( '<p>Your order has been shipped. The tracking number is <strong><a href="%s">%s</a></strong>.</p>', esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 	}
 }
-
-
-// Code heavily based on: https://www.wpeka.com/make-custom-endpoints-wordpress-rest-api.html
-class Shippo_Hook_For_Tracking_Info extends WP_REST_Controller {
-	private $api_namespace;
-	private $base;
-	private $api_version;
-	private $required_capability;
-	
-	public function __construct() {
-		$this->api_namespace = 'shippo/v';
-		$this->base = 'transaction-updated';
-		$this->api_version = '1';
-		$this->required_capability = 'read';  // Minimum capability to use the endpoint
-		
-		$this->init();
-	}
-	
-	
-	public function register_routes() {
-		$namespace = $this->api_namespace . $this->api_version;
-		
-		register_rest_route( $namespace, '/' . $this->base, array(
-			array( 'methods' => WP_REST_Server::CREATABLE, 'callback' => array( $this, 'add_tracking_info' ), ),
-		)  );
-	}
-
-
-	// Register our REST Server
-	public function init(){
-		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-	}
-	
-	
-	public function add_tracking_info( WP_REST_Request $request ){
-		$debug_mode = true;
-		$creds = array();
-		$headers = getallheaders();
-		$transaction_info = json_decode( $request->get_body() );
-		
-		if ( $debug_mode ) {
-			error_log( 'Headers: ' . var_export( $headers, true ) );
-			error_log( 'JSON: ' . var_export( $transaction_info, true ) );
-			$headers_and_json = sprintf( '%sHeaders:%s%s%sJSON:%s%s', "\n\n", "\n", var_export( $headers, true ), "\n", var_export( $transaction_info, true ), "\n" );
-			// ToDo: Get this email from WordPress settings.
-			//$debug_email = 'efox321@gmail.com';
-			$debug_email = 'damien.carbery@gmail.com';
-		}
-
-		// Add tracking info to order as custom fields.
-		if ( ! empty( $transaction_info->data->metadata ) && ! empty( $transaction_info->data->tracking_number ) && ! empty( $transaction_info->data->tracking_url_provider ) ) {
-			$order_id = (int) filter_var( $transaction_info->data->metadata, FILTER_SANITIZE_NUMBER_INT );  // Extract from string like "Order 1234".
-			$order = wc_get_order( $order_id );
-
-			// Ensure we have a valid WooCommerce order before adding tracking info.
-			if ( $order ) {
-				// Sanitize the tracking number and url.
-				$tracking_number = filter_var( $transaction_info->data->tracking_number, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK );
-				$tracking_url = filter_var( $transaction_info->data->tracking_url_provider, FILTER_SANITIZE_URL );
-
-				// Add the tracking info if both number and url pass sanitization checks.
-				if ( $tracking_number && $tracking_url ) {
-					$order->update_meta_data( 'tracking_number', $tracking_number );
-					$order->update_meta_data( 'tracking_url', $tracking_url );
-					
-					if ( $debug_mode ) {
-						$message = sprintf( 'Added tracking info: "%s" and "%s"', $tracking_number, $tracking_url );
-						error_log( $message );
-						wp_mail( $debug_email, 'DEBUG: Shippo webhook', $message . $headers_and_json );
-					}
-					return 'ok - tracking info added.';
-				}
-				else {
-					if ( $debug_mode ) {
-						$message = sprintf( 'One or both of tracking number (%s) and url (%s) failed sanitization check.', $transaction_info->data->tracking_number, $transaction_info->data->tracking_url_provider );
-						error_log( $message );
-						wp_mail( $debug_email, 'DEBUG: Shippo webhook', $message . $headers_and_json );
-					}
-					return "Failed - $message.";
-				}
-			}
-			else {
-				if ( $debug_mode ) {
-					$message = sprintf( 'Invalid order ID (%s) from string (%s)', $order_id, $transaction_info->data->metadata );
-					error_log( $message );
-					wp_mail( $debug_email, 'DEBUG: Shippo webhook', $message . $headers_and_json );
-				}
-				return "Failed - $message.";
-			}
-		}
-		else {
-			if ( $debug_mode ) {
-				$message = 'Missing "metadata" (w/order number) or "tracking_number" or "tracking_url_provider" info in $transaction_info.';
-				error_log( $message );
-				wp_mail( $debug_email, 'DEBUG: Shippo webhook', $message . $headers_and_json );
-			}
-			return "Failed - $message.";
-		}
-	}
-}
- 
-$shippo_hook = new Shippo_Hook_For_Tracking_Info();
