@@ -5,7 +5,7 @@ Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommer
 Description: Use custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.6.20240409
+Version: 0.6.20240414
 WC tested to: 8.7.0
 Requires Plugins: woocommerce
 */
