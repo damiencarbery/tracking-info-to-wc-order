@@ -5,7 +5,7 @@ Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommer
 Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.5.20240212
+Version: 0.5.20240406
 WC tested to: 8.5.2
 */
 
@@ -139,6 +139,8 @@ function dcwd_order_metabox() {
 		'id'         => 'tracking_url',
 		'type'       => 'text_url',
 		'protocols'  => array( 'http', 'https' ),
+		// Uncomment this if you need to set a default tracking url that you can easily edit.
+		//'default'    => 'https://the_tracking_url/path/to/tracking',
 		'desc' => 'Be sure to add tracking data and click \'Update\' before setting the order status to \'Completed\', and clicking \'Update\' again. If not done in this order the email sent to the customer will not contain the tracking data.',
 	) );
 }
