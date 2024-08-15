@@ -5,13 +5,93 @@ Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommer
 Description: Use CMB2 to add a custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.4.20240116
-WC tested to: 8.5.1
+Version: 0.5.20240212
+WC tested to: 8.5.2
 */
+
+defined( 'ABSPATH' ) || exit;
+
+
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
+// If HPOS is active then use custom meta box as CMB2 does not yet support HPOS.
+add_action( 'woocommerce_loaded', 'dcwd_check_hpos_active' );
+function dcwd_check_hpos_active() {
+	if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		// If HPOS is active then use custom meta box as CMB2 does not yet support HPOS.
+		add_action( 'add_meta_boxes', 'dcwd_add_tracking_info_meta_box' );
+		add_action( 'woocommerce_process_shop_order_meta', 'dcwd_save_tracking_info_meta_box_data' );
+	} else {
+		// If HPOS not active then use CMB2.
+		add_action( 'admin_notices', 'titwo_verify_cmb2_active' );
+	}
+}
+
+
+function dcwd_add_tracking_info_meta_box() {
+	add_meta_box( 'dcwd_tracking_info_meta_box', 'Tracking Information', 'dcwd_display_tracking_info_meta_box', 'woocommerce_page_wc-orders', 'side', 'high' );
+}
+
+
+// Render custom meta box.
+function dcwd_display_tracking_info_meta_box( $post ) {
+	wp_nonce_field( plugin_basename(__FILE__), 'dcwd_tracking_info_nonce' );
+
+	// Get the order object to retrieve the meta.
+	if ( $post instanceof WC_Order ) {
+		$order_id = $post->get_id();
+	} else {
+		$order_id = $post->ID;
+	}
+	$order = wc_get_order( $order_id );
+	$tracking_number = $order->get_meta( 'tracking_number', true );
+	$tracking_url = $order->get_meta( 'tracking_url', true );
+?>
+<style>
+.dcwd-tracking-info label { font-weight: bold; padding-bottom: 0.5em; }
+.dcwd-tracking-info input { width: 100%; margin-bottom: 1em; }
+</style>
+<div class="dcwd-tracking-info">
+  <label for="tracking_number">Tracking number</label>
+  <input type="text" class="dcwd-tracking" name="tracking_number" value="<?php esc_attr_e( $tracking_number ); ?>" />
+  <label for="tracking_url">Tracking URL</label>
+  <input type="text" name="tracking_url" value="<?php esc_attr_e( $tracking_url ); ?>" />
+  <p class="dcwd-tracking-info-description">Be sure to add tracking data and click 'Update' before setting the order status to 'Completed', and clicking 'Update' again. If not done in this order the email sent to the customer will not contain the tracking data.</p>
+</div>
+<?php
+}
+
+
+// Sanitize and store the updated tracking info.
+function dcwd_save_tracking_info_meta_box_data( $order_id ) {
+	if ( dcwd_user_can_save( $order_id, 'dcwd_tracking_info_nonce' ) ) {
+		$order = wc_get_order( $order_id );
+		if ( $order ) {
+			if ( isset( $_POST['tracking_number'] ) && 0 < strlen( trim( $_POST['tracking_number'] ) ) ) {
+				$tracking_number = sanitize_text_field( trim( $_POST['tracking_number'] ) );
+				$order->update_meta_data( 'tracking_number', $tracking_number );
+			}
+
+			if ( isset( $_POST['tracking_url'] ) && 0 < strlen( trim( $_POST['tracking_url'] ) ) ) {
+				$tracking_url = sanitize_url( $_POST['tracking_url'] );
+				$order->update_meta_data( 'tracking_url', $tracking_url );
+			}
+		}
+	}
+}
+
+
+// Verify the nonce and that this is not a post revision or autosave.
+function dcwd_user_can_save( $post_id, $nonce ) {
+	$is_autosave = wp_is_post_autosave( $post_id );
+	$is_revision = wp_is_post_revision( $post_id );
+	$is_valid_nonce = ( isset( $_POST[ $nonce ] ) && wp_verify_nonce( $_POST [ $nonce ], plugin_basename( __FILE__ ) ) );
+
+	return ! ( $is_autosave || $is_revision ) && $is_valid_nonce;
+}
 
 
 // Verify that CMB2 plugin is active.
-add_action( 'admin_notices', 'titwo_verify_cmb2_active' );
 function titwo_verify_cmb2_active() {
 	if ( ! defined( 'CMB2_LOADED' ) ) {
 		$current_screen = get_current_screen();
@@ -37,6 +117,7 @@ add_action( 'before_woocommerce_init', function() {
 // Add the metabox to allow for manual entering (or editing) of tracking information.
 add_action( 'cmb2_admin_init', 'dcwd_order_metabox' );
 function dcwd_order_metabox() {
+	// Set different 'object_types' if HPOS active.
 	$woo_hpos_active = get_option( 'woocommerce_custom_orders_table_enabled' );
 	$object_types = ( 'yes' == $woo_hpos_active ) ? array( 'woocommerce_page_wc-orders' ) : array( 'shop_order' );
 
@@ -104,6 +185,7 @@ function dcwd_check_for_email_template_customizer() {
 
 // Examine the tracking url and return a provider name.
 function dcwd_get_tracking_provider_from_url( $url ) {
+	// ToDo: Consider putting these in an array with apply_filters().
 	if ( strpos( $url, 'usps.com' ) !== false ) {
 		return 'USPS';
 	}
@@ -120,6 +202,9 @@ function dcwd_get_tracking_provider_from_url( $url ) {
 	if ( strpos( $url, 'www.singpost.com' ) !== false ) {
 		return 'Singapore Post';
 	}
+	if ( strpos( $url, 'royalmail.com' ) !== false ) {
+		return 'Royal Mail';
+	}
 	
 	// Unknown provider.
 	return null;
@@ -134,7 +219,7 @@ function dcwd_is_order_virtual_only( $order_id ) {
 	if ( $order ) {
 		foreach ( $order->get_items() as $order_item ) {
 			$item = wc_get_product( $order_item->get_product_id() );
-			if ( !$item->is_type( 'virtual' ) && 'pw-gift-card' != $item->get_type() ) {
+			if ( !$item->is_virtual() && !$item->is_downloadable() && 'pw-gift-card' != $item->get_type() ) {
 				// This order contains a physical product so stop looking.
 				return false;
 			}
@@ -173,7 +258,7 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 		// Quit if either tracking field is empty.
 		if ( empty( $tracking_number ) || empty( $tracking_url ) ) {
 			// Debugging code.
-			error_log( sprintf( 'Order %d does not have both tracking number (%s) and url (%s)', $order_id, $tracking_number, $tracking_url ) );
+			//error_log( sprintf( 'Order %d does not have both tracking number (%s) and url (%s)', $order_id, $tracking_number, $tracking_url ) );
 			echo '<h2>Tracking information</h2><p>Sorry, tracking information is not available at this time.</p>';
 			return;
 		}
