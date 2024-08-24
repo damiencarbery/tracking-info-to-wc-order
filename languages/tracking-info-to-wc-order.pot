@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the Tracking Info to WooCommerce order package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Tracking Info to WooCommerce order 0.7.20240815\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/qs_tool_wp_pot_gen_1723749258_3756_766351\n"
-"POT-Creation-Date: 2024-08-15 19:14:18+00:00\n"
+"Project-Id-Version: Tracking Info to WooCommerce order 0.7.20240823\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tracking-info-to-wc-order\n"
+"POT-Creation-Date: 2024-08-24 09:09:53+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,45 +12,45 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: tracking-info-to-wc-order.php:78
+#: tracking-info-to-wc-order.php:90
 msgctxt "Form label for tracking number"
 msgid "Tracking number"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:80
+#: tracking-info-to-wc-order.php:92
 msgctxt "Form label for tracking url"
 msgid "Tracking URL"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:208
+#: tracking-info-to-wc-order.php:220
 msgid "<h2>Tracking information</h2><p>Sorry, tracking information is not available at this time.</p>"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:216
+#: tracking-info-to-wc-order.php:228
 msgid "Your order has been shipped with %s. The tracking number is %s and you can track it at %s."
 msgstr ""
 
-#: tracking-info-to-wc-order.php:219
+#: tracking-info-to-wc-order.php:231
 msgid "Your order has been shipped. The tracking number is %s and you can track it at %s."
 msgstr ""
 
-#: tracking-info-to-wc-order.php:224
+#: tracking-info-to-wc-order.php:236
 msgid "<h2>Tracking information</h2><p>Your %s tracking number is <a href=\"%s\" style=\"color: #a7bf49\">%s</a>.</p>"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:227
+#: tracking-info-to-wc-order.php:239
 msgid "<h2>Tracking information</h2><p>Your tracking number is <strong><a href=\"%s\" style=\"color: #a7bf49\">%s</a></strong>.</p>"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:249
+#: tracking-info-to-wc-order.php:261
 msgid "<p>Sorry, tracking information is not available at this time.</p>"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:255
+#: tracking-info-to-wc-order.php:267
 msgid "<p>Your order has been shipped with <strong>%s</strong>. The tracking number is <strong><a href=\"%s\">%s</a></strong>.</p>"
 msgstr ""
 
-#: tracking-info-to-wc-order.php:258
+#: tracking-info-to-wc-order.php:270
 msgid "<p>Your order has been shipped. The tracking number is <strong><a href=\"%s\">%s</a></strong>.</p>"
 msgstr ""
 #. Plugin Name of the plugin/theme
