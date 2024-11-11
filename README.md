@@ -1,3 +1,15 @@
+=== Tracking Info to WooCommerce order ===
+Requires at least: 6.5
+Tested up to: 6.6.2
+Requires PHP: 7.4
+Stable tag: 0.9.20241111
+License: GPLv2
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Everything you need to launch an online store in days and keep it growing for years. From your first sale to millions in revenue, Woo is with you.
+
+== Description ==
+
 # Tracking info to a WooCommerce order
 
 ## Description
