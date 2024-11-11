@@ -5,11 +5,13 @@ Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommer
 Description: Use custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.7.20240824
-WC tested to: 9.2.2
+Version: 0.9.20241111
+WC tested to: 9.3.3
 Text Domain: tracking-info-to-wc-order
 Domain Path: /languages
 Requires Plugins: woocommerce
+License: GPLv2
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 
@@ -76,10 +78,10 @@ function dcwd_display_tracking_info_meta_box( $post ) {
 .dcwd-tracking-info input { width: 100%; margin-bottom: 1em; }
 </style>
 <div class="dcwd-tracking-info">
-  <label for="tracking_number"><?php esc_html_x( 'Tracking number', 'Form label for tracking number', 'tracking-info-to-wc-order' ); ?></label>
-  <input type="text" class="dcwd-tracking" name="tracking_number" value="<?php esc_attr_e( $tracking_number, 'tracking-info-to-wc-order' ); ?>" />
-  <label for="tracking_url"><?php esc_html_x( 'Tracking URL', 'Form label for tracking url', 'tracking-info-to-wc-order' ); ?></label>
-  <input type="text" name="tracking_url" value="<?php esc_attr_e( $tracking_url, 'tracking-info-to-wc-order' ); ?>" />
+  <label for="tracking_number"><?php echo esc_html_x( 'Tracking number', 'Form label for tracking number', 'tracking-info-to-wc-order' ); ?></label>
+  <input type="text" class="dcwd-tracking" name="tracking_number" value="<?php esc_attr( $tracking_number ); ?>" />
+  <label for="tracking_url"><?php echo esc_html_x( 'Tracking URL', 'Form label for tracking url', 'tracking-info-to-wc-order' ); ?></label>
+  <input type="text" name="tracking_url" value="<?php esc_attr( $tracking_url ); ?>" />
   <?php /* Changing order status can now happen at the same time as adding tracking info (because I am using 'save_post' action which is earlier than when CMB2 saved data). */ ?>
   <!--<p class="dcwd-tracking-info-description">Be sure to add tracking data and click 'Update' before setting the order status to 'Completed', and clicking 'Update' again. If not done in this order the email sent to the customer will not contain the tracking data.</p>-->
 </div>
@@ -89,18 +91,25 @@ function dcwd_display_tracking_info_meta_box( $post ) {
 
 // Sanitize and store the updated tracking info.
 function dcwd_save_tracking_info_meta_box_data( $order_id ) {
-	if ( dcwd_user_can_save( $order_id, 'dcwd_tracking_info_nonce' ) ) {
+	$is_autosave = wp_is_post_autosave( $post_id );
+	$is_revision = wp_is_post_revision( $post_id );
+	$is_valid_nonce = ( isset( $_POST[ 'dcwd_tracking_info_nonce' ] ) && wp_verify_nonce( wp_unslash( $_POST[ 'dcwd_tracking_info_nonce' ] ), plugin_basename( __FILE__ ) ) );
+
+	return ! ( $is_autosave || $is_revision ) && $is_valid_nonce;
+
+	//if ( dcwd_user_can_save( $order_id, 'dcwd_tracking_info_nonce' ) ) {
+	if ( ! ( $is_autosave || $is_revision ) && $is_valid_nonce ) {
 		$order = wc_get_order( $order_id );
 		if ( $order ) {
 			$save_needed = false;
-			if ( isset( $_POST['tracking_number'] ) && 0 < strlen( trim( $_POST['tracking_number'] ) ) ) {
-				$tracking_number = sanitize_text_field( trim( $_POST['tracking_number'] ) );
+			if ( isset( $_POST['tracking_number'] ) && 0 < strlen( trim( wp_unslash( $_POST['tracking_number'] ) ) ) ) {
+				$tracking_number = sanitize_text_field( trim( wp_unslash( $_POST['tracking_number'] ) ) );
 				$order->update_meta_data( 'tracking_number', $tracking_number );
 				$save_needed = true;
 			}
 
-			if ( isset( $_POST['tracking_url'] ) && 0 < strlen( trim( $_POST['tracking_url'] ) ) ) {
-				$tracking_url = sanitize_url( $_POST['tracking_url'] );
+			if ( isset( $_POST['tracking_url'] ) && 0 < strlen( trim( wp_unslash( $_POST['tracking_url'] ) ) ) ) {
+				$tracking_url = sanitize_url( trim( wp_unslash( $_POST['tracking_url'] ) ) );
 				$order->update_meta_data( 'tracking_url', $tracking_url );
 				$save_needed = true;
 			}
@@ -113,14 +122,16 @@ function dcwd_save_tracking_info_meta_box_data( $order_id ) {
 }
 
 
+/*
 // Verify the nonce and that this is not a post revision or autosave.
 function dcwd_user_can_save( $post_id, $nonce ) {
 	$is_autosave = wp_is_post_autosave( $post_id );
 	$is_revision = wp_is_post_revision( $post_id );
-	$is_valid_nonce = ( isset( $_POST[ $nonce ] ) && wp_verify_nonce( $_POST[ $nonce ], plugin_basename( __FILE__ ) ) );
+	$is_valid_nonce = ( isset( $_POST[ $nonce ] ) && wp_verify_nonce( wp_unslash( $_POST[ $nonce ] ), plugin_basename( __FILE__ ) ) );
 
 	return ! ( $is_autosave || $is_revision ) && $is_valid_nonce;
 }
+*/
 
 
 // If using 'Email Template Customizer for WooCommerce' plugin then use a different hook
@@ -214,18 +225,22 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 
 		if ( $plain_text ) {
 			if ( ! empty( $tracking_provider ) ) {
-				echo sprintf( "\n" . wp_kses( __( 'Your order has been shipped with %s. The tracking number is %s and you can track it at %s.', 'tracking-info-to-wc-order' ) . "\n", wp_kses_allowed_html( 'post' ) ), $tracking_provider, esc_html( $tracking_number ), esc_url( $tracking_url, array( 'http', 'https' ) ) );
+				// translators: %1$s is tracking provider name; %2$s is tracking number; %3$s is tracking url.
+				echo sprintf( "\n" . wp_kses( __( 'Your order has been shipped with %1$s. The tracking number is %2$s and you can track it at %3$s.', 'tracking-info-to-wc-order' ) . "\n", wp_kses_allowed_html( 'post' ) ), esc_html( $tracking_provider ), esc_html( $tracking_number ), esc_url( $tracking_url, array( 'http', 'https' ) ) );
 			}
 			else {
-				echo sprintf( "\n" . wp_kses( __( 'Your order has been shipped. The tracking number is %s and you can track it at %s.', 'tracking-info-to-wc-order' ) . "\n", wp_kses_allowed_html( 'post' ) ), esc_html( $tracking_number ), esc_url( $tracking_url, array( 'http', 'https' ) ) );
+				// translators: %1$s is tracking provider name; %2$s is tracking number
+				echo sprintf( "\n" . wp_kses( __( 'Your order has been shipped. The tracking number is %1$s and you can track it at %2$s.', 'tracking-info-to-wc-order' ) . "\n", wp_kses_allowed_html( 'post' ) ), esc_html( $tracking_number ), esc_url( $tracking_url, array( 'http', 'https' ) ) );
 			}
 		}
 		else {
 			if ( ! empty( $tracking_provider ) ) {
-				echo sprintf( wp_kses( __( '<h2>Tracking information</h2><p>Your %s tracking number is <a href="%s" style="color: #a7bf49">%s</a>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), $tracking_provider, esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+				// translators: %1$s is tracking provider name; %2$s is tracking url; %3$s is tracking number.
+				echo sprintf( wp_kses( __( '<h2>Tracking information</h2><p>Your %1$s tracking number is <a href="%2$s" style="color: #a7bf49">%3$s</a>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_html( $tracking_provider ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 			}
 			else {
-				echo sprintf( wp_kses( __( '<h2>Tracking information</h2><p>Your tracking number is <strong><a href="%s" style="color: #a7bf49">%s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+				// translators: %1$s is tracking url; %2$s is tracking number.
+				echo sprintf( wp_kses( __( '<h2>Tracking information</h2><p>Your tracking number is <strong><a href="%1$s" style="color: #a7bf49">%2$s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 			}
 		}
 	}
@@ -247,15 +262,17 @@ function dcwd_add_tracking_info_to_view_order_page( $order_id ) {
 	if ( empty( $tracking_number ) || empty( $tracking_url ) ) {
 		// Debugging code.
 		//error_log( sprintf( 'Order %d does not have both tracking number (%s) and url (%s)', $order_id, $tracking_number, $tracking_url ) );
-		echo wp_kses( __( '<p>Sorry, tracking information is not available at this time.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) );
+		echo '<p>', wp_kses( __( 'Sorry, tracking information is not available at this time.', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), '</p>';
 		return;
 	}
 
 	$tracking_provider = dcwd_get_tracking_provider_from_url( $tracking_url );
 	if ( ! empty( $tracking_provider ) ) {
-		echo sprintf( wp_kses( __( '<p>Your order has been shipped with <strong>%s</strong>. The tracking number is <strong><a href="%s">%s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), $tracking_provider, esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+		// translators: %1$s is tracking provider name; %2$s is tracking url; %3$s is tracking number.
+		echo sprintf( wp_kses( __( '<p>Your order has been shipped with <strong>%1$s</strong>. The tracking number is <strong><a href="%2$s">%3$s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_html( $tracking_provider ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 	}
 	else {
-		echo sprintf( wp_kses( __( '<p>Your order has been shipped. The tracking number is <strong><a href="%s">%s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
+		// translators: %1$s is tracking url; %2$s is tracking number.
+		echo sprintf( wp_kses( __( '<p>Your order has been shipped. The tracking number is <strong><a href="%1$s">%2$s</a></strong>.</p>', 'tracking-info-to-wc-order' ), wp_kses_allowed_html( 'post' ) ), esc_url( $tracking_url, array( 'http', 'https' ) ), esc_html( $tracking_number ) );
 	}
 }
