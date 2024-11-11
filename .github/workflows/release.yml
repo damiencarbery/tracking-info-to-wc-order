@@ -8,13 +8,13 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           path: ${{ github.workspace }}
 
       # https://keithweaverca.medium.com/zip-code-base-with-github-actions-for-releases-aca66f530dae
-      - name: Create a release folder and copy PHP files
-        run: mkdir ${{ github.event.repository.name }} && cp -r * ./${{ github.event.repository.name }} && rm ./${{ github.event.repository.name }}/shippo-webhook.php
+      - name: Create a release folder and copy PHP, translation and other plugin files files
+        run: mkdir ${{ github.event.repository.name }} && cp -r languages *.php README.md ./${{ github.event.repository.name }} && rm -r ./${{ github.event.repository.name }}/shippo-webhook.php
 
       - name: Zip release
         uses: thedoctor0/zip-release@master #https://github.com/TheDoctor0/zip-release
@@ -23,7 +23,7 @@ jobs:
           filename: '${{ github.event.repository.name }}-${{github.ref_name }}.zip'
 
       - name: Upload release asset 2
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: '${{ github.event.repository.name }}-${{github.ref_name }}.zip'
