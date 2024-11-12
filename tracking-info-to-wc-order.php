@@ -5,7 +5,7 @@ Plugin URI: https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommer
 Description: Use custom metabox to add tracking information to WooCommerce orders. The information is then added to the "Completed Order" email.
 Author: Damien Carbery
 Author URI: https://www.damiencarbery.com
-Version: 0.9.20241111
+Version: 0.10.20241112
 WC tested to: 9.3.3
 Text Domain: tracking-info-to-wc-order
 Domain Path: /languages
@@ -79,11 +79,9 @@ function dcwd_display_tracking_info_meta_box( $post ) {
 </style>
 <div class="dcwd-tracking-info">
   <label for="tracking_number"><?php echo esc_html_x( 'Tracking number', 'Form label for tracking number', 'tracking-info-to-wc-order' ); ?></label>
-  <input type="text" class="dcwd-tracking" name="tracking_number" value="<?php esc_attr( $tracking_number ); ?>" />
+  <input type="text" class="dcwd-tracking" name="tracking_number" value="<?php esc_attr_e( $tracking_number ); ?>" />
   <label for="tracking_url"><?php echo esc_html_x( 'Tracking URL', 'Form label for tracking url', 'tracking-info-to-wc-order' ); ?></label>
-  <input type="text" name="tracking_url" value="<?php esc_attr( $tracking_url ); ?>" />
-  <?php /* Changing order status can now happen at the same time as adding tracking info (because I am using 'save_post' action which is earlier than when CMB2 saved data). */ ?>
-  <!--<p class="dcwd-tracking-info-description">Be sure to add tracking data and click 'Update' before setting the order status to 'Completed', and clicking 'Update' again. If not done in this order the email sent to the customer will not contain the tracking data.</p>-->
+  <input type="text" name="tracking_url" value="<?php esc_attr_e( $tracking_url ); ?>" />
 </div>
 <?php
 }
@@ -91,13 +89,13 @@ function dcwd_display_tracking_info_meta_box( $post ) {
 
 // Sanitize and store the updated tracking info.
 function dcwd_save_tracking_info_meta_box_data( $order_id ) {
-	$is_autosave = wp_is_post_autosave( $post_id );
-	$is_revision = wp_is_post_revision( $post_id );
+	$is_autosave = wp_is_post_autosave( $order_id );
+	$is_revision = wp_is_post_revision( $order_id );
 	$is_valid_nonce = ( isset( $_POST[ 'dcwd_tracking_info_nonce' ] ) && wp_verify_nonce( wp_unslash( $_POST[ 'dcwd_tracking_info_nonce' ] ), plugin_basename( __FILE__ ) ) );
 
-	return ! ( $is_autosave || $is_revision ) && $is_valid_nonce;
+	// Return if autosave or revision or if nonce invalid.
+	if ( ( $is_autosave || $is_revision ) && !$is_valid_nonce ) { return; } 
 
-	//if ( dcwd_user_can_save( $order_id, 'dcwd_tracking_info_nonce' ) ) {
 	if ( ! ( $is_autosave || $is_revision ) && $is_valid_nonce ) {
 		$order = wc_get_order( $order_id );
 		if ( $order ) {
@@ -120,18 +118,6 @@ function dcwd_save_tracking_info_meta_box_data( $order_id ) {
 		}
 	}
 }
-
-
-/*
-// Verify the nonce and that this is not a post revision or autosave.
-function dcwd_user_can_save( $post_id, $nonce ) {
-	$is_autosave = wp_is_post_autosave( $post_id );
-	$is_revision = wp_is_post_revision( $post_id );
-	$is_valid_nonce = ( isset( $_POST[ $nonce ] ) && wp_verify_nonce( wp_unslash( $_POST[ $nonce ] ), plugin_basename( __FILE__ ) ) );
-
-	return ! ( $is_autosave || $is_revision ) && $is_valid_nonce;
-}
-*/
 
 
 // If using 'Email Template Customizer for WooCommerce' plugin then use a different hook
@@ -212,7 +198,7 @@ function dcwd_add_tracking_info_to_order_completed_email( $order, $sent_to_admin
 
 		$tracking_number = $order->get_meta( 'tracking_number', true );
 		$tracking_url = $order->get_meta( 'tracking_url', true );
-		
+
 		// Quit if either tracking field is empty.
 		if ( empty( $tracking_number ) || empty( $tracking_url ) ) {
 			// Debugging code.
