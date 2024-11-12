@@ -1,0 +1,75 @@
+# Copyright (C) 2024 Tracking Info to WooCommerce order
+# This file is distributed under the same license as the Tracking Info to WooCommerce order package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Tracking Info to WooCommerce order 0.7.20240823\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tracking-info-to-wc-order\n"
+"POT-Creation-Date: 2024-11-12 14:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-11-12 14:00+UTC\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: tracking-info-to-wc-order.php:90
+msgctxt "Form label for tracking number"
+msgid "Tracking number"
+msgstr "Número de seguimiento"
+
+#: tracking-info-to-wc-order.php:92
+msgctxt "Form label for tracking url"
+msgid "Tracking URL"
+msgstr "URL de seguimiento"
+
+#: tracking-info-to-wc-order.php:220
+msgid "<h2>Tracking information</h2><p>Sorry, tracking information is not available at this time.</p>"
+msgstr "<h2>Información sobre el seguimiento</h2><p>Lo sentimos, la información sobre el seguimiento no se encuentra disponible en este momento.</p>"
+
+#: tracking-info-to-wc-order.php:228
+msgid "Your order has been shipped with %s. The tracking number is %s and you can track it at %s."
+msgstr "Tu pedido fue enviado con %s. El número de seguimiento es %s, y puedes rastrearlo en %s."
+
+#: tracking-info-to-wc-order.php:231
+msgid "Your order has been shipped. The tracking number is %s and you can track it at %s."
+msgstr "Tu pedido fue enviado. El número de seguimiento es %s, y puedes rastrearlo en %s."
+
+#: tracking-info-to-wc-order.php:236
+msgid "<h2>Tracking information</h2><p>Your %s tracking number is <a href=\"%s\" style=\"color: #a7bf49\">%s</a>.</p>"
+msgstr "<h2>Información sobre el seguimiento</h2><p>Tu número de seguimiento %s es <a href=\"%s\" style=\"color: #a7bf49\">%s</a>.</p>"
+
+#: tracking-info-to-wc-order.php:239
+msgid "<h2>Tracking information</h2><p>Your tracking number is <strong><a href=\"%s\" style=\"color: #a7bf49\">%s</a></strong>.</p>"
+msgstr "<h2>Información sobre el seguimiento</h2><p>Tu número de seguimiento es <strong><a href=\"%s\" style=\"color: #a7bf49\">%s</a></strong>.</p>"
+
+#: tracking-info-to-wc-order.php:261
+msgid "<p>Sorry, tracking information is not available at this time.</p>"
+msgstr "<p>Lo sentimos, la información sobre el seguimiento no se encuentra disponible en este momento.</p>"
+
+#: tracking-info-to-wc-order.php:267
+msgid "<p>Your order has been shipped with <strong>%s</strong>. The tracking number is <strong><a href=\"%s\">%s</a></strong>.</p>"
+msgstr "<p>Tu pedido fue enviado con <strong>%s</strong>. El número de seguimiento es <strong><a href=\"%s\">%s</a></strong>.</p>"
+
+#: tracking-info-to-wc-order.php:270
+msgid "<p>Your order has been shipped. The tracking number is <strong><a href=\"%s\">%s</a></strong>.</p>"
+msgstr "<p>Tu pedido fue enviado. El número de seguimiento es <strong><a href=\"%s\">%s</a></strong>.</p>"
+
+#. Plugin Name of the plugin/theme
+msgid "Tracking Info to WooCommerce order"
+msgstr "Seguimientos para órdenes de WooCommerce"
+
+#. Plugin URI of the plugin/theme
+msgid "https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommerce-order/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Use custom metabox to add tracking information to WooCommerce orders. The information is then added to the \"Completed Order\" email."
+msgstr "Implementa una metabox personalizada para añadir información de seguimiento a los pedidos de WooCommerce. La información se añade a los correos electrónicos de estado Completado."
+
+#. Author of the plugin/theme
+msgid "Damien Carbery"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://www.damiencarbery.com"
+msgstr ""
