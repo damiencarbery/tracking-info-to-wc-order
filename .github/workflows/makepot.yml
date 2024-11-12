@@ -1,0 +1,15 @@
+workflow "Deploy" {
+   resolves = ["WordPress Pot Generator"]
+   on = "push"
+ }
+action "WordPress Pot Generator" {
+   uses = "varunsridharan/wordpress-pot-generator@master"
+   env = {
+      SAVE_PATH = "languages/tracking-info-to-wc-order.pot" 
+      ITEM_SLUG = "tracking-info-to-wc-order" 
+      DOMAIN = "tracking-info-to-wc-order" 
+      PACKAGE_NAME = "Tracking Info to WooCommerce order" 
+      HEADERS = "{\"Project-Id-Version\":\"Tracking Info to WooCommerce order\",\"Report-Msgid-Bugs-To\":\"https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommerce-order/\"}" 
+   }
+   secrets = ["GITHUB_TOKEN"]
+}
