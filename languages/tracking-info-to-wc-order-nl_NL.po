@@ -15,89 +15,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.4.4\n"
 
-#: tracking-info-to-wc-order.php:90
+#: tracking-info-to-wc-order.php:81
 msgctxt "Form label for tracking number"
 msgid "Tracking number"
 msgstr "Track & Trace nummer"
 
-#: tracking-info-to-wc-order.php:92
+#: tracking-info-to-wc-order.php:83
 msgctxt "Form label for tracking url"
 msgid "Tracking URL"
 msgstr "Track & Trace URL"
 
-#: tracking-info-to-wc-order.php:220
-msgid ""
-"<h2>Tracking information</h2><p>Sorry, tracking information is not available "
-"at this time.</p>"
-msgstr ""
-"<h2>Volg je bestelling</h2><p>Sorry, op dit moment is er geen informatie "
-"beschikbaar.</p>"
+#: tracking-info-to-wc-order.php:206
+msgid "<h2>Tracking information</h2><p>Sorry, tracking information is not available at this time.</p>"
+msgstr "<h2>Volg je bestelling</h2><p>Sorry, op dit moment is er geen informatie beschikbaar.</p>"
 
-#: tracking-info-to-wc-order.php:228
-msgid ""
-"Your order has been shipped with %s. The tracking number is %s and you can "
-"track it at %s."
-msgstr ""
-"Je bestelling is verzonden met %s. De track & trace code is %s en je kunt je "
-"bestelling hier volgen: %s."
+#: tracking-info-to-wc-order.php:215
+msgid "Your order has been shipped with %1$s. The tracking number is %2$s and you can track it at %3$s."
+msgstr "Je bestelling is verzonden met %1$s. De track & trace code is %2$s en je kunt je bestelling hier volgen: %3$s."
 
-#: tracking-info-to-wc-order.php:231
-msgid ""
-"Your order has been shipped. The tracking number is %s and you can track it "
-"at %s."
-msgstr ""
-"Je bestelling is verzonden. De track & trace code is %s en je kunt je "
-"bestelling hier volgen: %s."
+#: tracking-info-to-wc-order.php:219
+msgid "Your order has been shipped. The tracking number is %1$s and you can track it at %2$s."
+msgstr "Je bestelling is verzonden. De track & trace code is %1$s en je kunt je bestelling hier volgen: %2$s."
 
-#: tracking-info-to-wc-order.php:236
-msgid ""
-"<h2>Tracking information</h2><p>Your %s tracking number is <a href=\"%s\" "
-"style=\"color: #a7bf49\">%s</a>.</p>"
-msgstr ""
-"<h2>Volg je bestelling</h2><p>Jouw %s track & trace code is: <a href=\"%s\" "
-"style=\"color: #a7bf49\">%s</a>.</p>"
+#: tracking-info-to-wc-order.php:225
+msgid "<h2>Tracking information</h2><p>Your %1$s tracking number is <a href=\"%2$s\" style=\"color: #a7bf49\">%3$s</a>.</p>"
+msgstr "<h2>Volg je bestelling</h2><p>Jouw %1$s track & trace code is: <a href=\"%2$s\" style=\"color: #a7bf49\">%3$s</a>.</p>"
 
-#: tracking-info-to-wc-order.php:239
-msgid ""
-"<h2>Tracking information</h2><p>Your tracking number is <strong><a "
-"href=\"%s\" style=\"color: #a7bf49\">%s</a></strong>.</p>"
-msgstr ""
-"<h2>Volg je bestelling</h2><p>De track & trace code is <strong><a "
-"href=\"%s\" style=\"color: #a7bf49\">%s</a></strong>.</p>"
+#: tracking-info-to-wc-order.php:229
+msgid "<h2>Tracking information</h2><p>Your tracking number is <strong><a href=\"%1$s\" style=\"color: #a7bf49\">%2$s</a></strong>.</p>"
+msgstr "<h2>Volg je bestelling</h2><p>De track & trace code is <strong><a href=\"%1$s\" style=\"color: #a7bf49\">%2$s</a></strong>.</p>"
 
-#: tracking-info-to-wc-order.php:261
-msgid "<p>Sorry, tracking information is not available at this time.</p>"
-msgstr "<p>Sorry, op dit moment is er geen informatie beschikbaar.</p>"
+#: tracking-info-to-wc-order.php:251
+msgid "Sorry, tracking information is not available at this time."
+msgstr "Sorry, op dit moment is er geen informatie beschikbaar."
 
-#: tracking-info-to-wc-order.php:267
-msgid ""
-"<p>Your order has been shipped with <strong>%s</strong>. The tracking number "
-"is <strong><a href=\"%s\">%s</a></strong>.</p>"
-msgstr ""
-"<p>Je bestelling is verzonden met <strong>%s</strong>. De track & trace code "
-"is <strong><a href=\"%s\">%s</a></strong>.</p>"
+#: tracking-info-to-wc-order.php:258
+msgid "<p>Your order has been shipped with <strong>%1$s</strong>. The tracking number is <strong><a href=\"%2$s\">%3$s</a></strong>.</p>"
+msgstr "<p>Je bestelling is verzonden met <strong>%1$s</strong>. De track & trace code is <strong><a href=\"%2$s\">%3$s</a></strong>.</p>"
 
 #: tracking-info-to-wc-order.php:270
-msgid ""
-"<p>Your order has been shipped. The tracking number is <strong><a "
-"href=\"%s\">%s</a></strong>.</p>"
-msgstr ""
-"<p>Je bestelling is verzonden. De track & trace code is <strong><a "
-"href=\"%s\">%s</a></strong>.</p>"
+msgid "<p>Your order has been shipped. The tracking number is <strong><a href=\"%1$s\">%2$s</a></strong>.</p>"
+msgstr "<p>Je bestelling is verzonden. De track & trace code is <strong><a href=\"%1$s\">%2$s</a></strong>.</p>"
 
-#. Plugin Name of the plugin/theme
-msgid "Tracking Info to WooCommerce order"
-msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid ""
-"https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommerce-order/"
+msgid "https://www.damiencarbery.com/2020/01/add-tracking-info-to-woocommerce-order/"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid ""
-"Use custom metabox to add tracking information to WooCommerce orders. The "
-"information is then added to the \"Completed Order\" email."
+msgid "Use custom metabox to add tracking information to WooCommerce orders. The information is then added to the \"Completed Order\" email."
 msgstr ""
 
 #. Author of the plugin/theme
